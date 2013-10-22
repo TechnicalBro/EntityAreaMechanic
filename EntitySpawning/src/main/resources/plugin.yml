@@ -1,0 +1,13 @@
+name: Entity-Mechanic
+main: com.caved_in.EntitySpawningMechanic.EntityMechanic
+version: 1.0
+description: The Entity System for TotalWar
+author: Brandon_TGC
+depend: [BKCommonLib]
+commands:
+   newarea:
+      usage: /newarea <AreaName> <SpawnRadius>
+   areas:
+      usage: /areas [list]
+   addmob:
+      usage: /addmob <AreaName> <MinLevel> <MaxLevel> <MobType> <Boolean[IsElite]> <Percent[Elite Spawn Chance]>
