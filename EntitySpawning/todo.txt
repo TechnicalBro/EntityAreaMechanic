@@ -1,0 +1,3 @@
+- Create methods to get a players current area.
+
+- Create events for when players enter & leave an area.
