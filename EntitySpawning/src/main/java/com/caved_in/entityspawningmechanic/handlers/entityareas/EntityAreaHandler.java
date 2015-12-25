@@ -5,20 +5,27 @@ import java.util.*;
 
 import com.caved_in.commons.entity.CreatureBuilder;
 import com.caved_in.commons.entity.Entities;
+import com.caved_in.commons.location.Locations;
+import com.caved_in.commons.plugin.Plugins;
 import com.caved_in.commons.utilities.NumberUtil;
 import com.caved_in.entityspawningmechanic.EntityMechanic;
 import com.caved_in.entityspawningmechanic.config.EntityArea;
 import com.caved_in.entityspawningmechanic.config.XmlEntity;
 import com.caved_in.entityspawningmechanic.entity.EntityCalculations;
+import com.caved_in.entityspawningmechanic.event.EntityModifiedOnSpawnEvent;
+import com.caved_in.entityspawningmechanic.event.EntityToBeSpawnedEvent;
 import com.caved_in.entityspawningmechanic.handlers.entity.EntityHandler;
 import com.caved_in.entityspawningmechanic.handlers.entity.EntityUtilities;
 import org.apache.commons.io.FileUtils;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 public class EntityAreaHandler {
     private HashMap<String, EntityArea> areas = new HashMap<String, EntityArea>();
+
+    private Set<Location> nonReplaceLocations = new HashSet<>();
 
     public EntityAreaHandler() {
 
@@ -100,25 +107,50 @@ public class EntityAreaHandler {
 
     public void spawnRandomEntity(EntityArea entityArea) {
         XmlEntity enemyToSpawn = entityArea.getRandomEntity();
-        int enemyLevel = NumberUtil.getRandomInRange(enemyToSpawn.getMinLevel(), enemyToSpawn.getMaxLevel());
-        int enemyHealth = 0;
 
-        //EntityWrapper entityWrapper = new EntityWrapper(spawnedEntity, enemyLevel);
-        String entityName = "";
-
-        CreatureBuilder builder = CreatureBuilder.of(enemyToSpawn.getType());
-
-        if (enemyToSpawn.isElite() && NumberUtil.percentCheck(enemyToSpawn.getEliteSpawnChance())) {
-            enemyHealth = EntityCalculations.generateHealth(enemyLevel, true, false);
-            entityName = EntityUtilities.generateEntityName(enemyToSpawn.getType(), true, false, enemyLevel);
-        } else {
-            enemyHealth = EntityCalculations.generateHealth(enemyLevel, false, false);
-            entityName = EntityUtilities.generateEntityName(enemyToSpawn.getType(), false, false, enemyLevel);
+        if (enemyToSpawn == null) {
+            return;
         }
 
-        LivingEntity spawned = builder.name(entityName).maxHealth(enemyHealth).health(enemyHealth).spawn(entityArea.getLocation());
+        int enemyLevel = NumberUtil.getRandomInRange(enemyToSpawn.getMinLevel(), enemyToSpawn.getMaxLevel());
+        boolean elite = enemyToSpawn.isElite() && NumberUtil.percentCheck(enemyToSpawn.getEliteSpawnChance());
+        Location loc = entityArea.getLocationInArea();
+
+        EntityToBeSpawnedEvent event = new EntityToBeSpawnedEvent(entityArea, enemyToSpawn.getType(), elite, enemyLevel, loc);
+        Plugins.callEvent(event);
+
+        enemyLevel = event.getLevel();
+
+        elite = event.isElite();
+
+        int enemyHealth = EntityCalculations.generateHealth(enemyLevel, elite, false);
+
+        //EntityWrapper entityWrapper = new EntityWrapper(spawnedEntity, enemyLevel);
+        String entityName = EntityUtilities.generateEntityName(event.getType(), elite, false, enemyLevel);
+
+        CreatureBuilder builder = CreatureBuilder.of(event.getType());
+
+        nonReplaceLocations.add(loc);
+
+        LivingEntity spawned = builder.name(entityName).maxHealth(enemyHealth).health(enemyHealth).spawn(loc);
 
         EntityHandler.addEntity(spawned, enemyLevel);
+    }
+
+    public boolean allowReplace(Location loc) {
+        Location remove = null;
+        for (Location check : nonReplaceLocations) {
+            if (Locations.isInRadius(check, loc, 2)) {
+                remove = check;
+            }
+        }
+
+        if (remove == null) {
+            return true;
+        }
+
+        nonReplaceLocations.remove(remove);
+        return false;
     }
 
     public void spawnRandomEntity(String entityArea) {
@@ -141,22 +173,23 @@ public class EntityAreaHandler {
     }
 
     public double getAreaDensity(String entityArea) {
-        if (this.isArea(entityArea.toLowerCase())) {
-            return this.getAreaDensity(this.getArea(entityArea.toLowerCase()));
+        if (isArea(entityArea.toLowerCase())) {
+            return getAreaDensity(getArea(entityArea.toLowerCase()));
         }
         return -1;
     }
 
     public boolean densityCheck(EntityArea entityArea) {
         int areaEntities = Entities.getEntitiesNearLocation(entityArea.getLocation(), (int) entityArea.getSpawnRadius()).size();
+
         double areaDensity = this.getAreaDensity(entityArea);
         double radiusCheck = (entityArea.getSpawnRadius() * 2) * 10;
         return (areaEntities < (entityArea.getSpawnRadius() / 2) ? (new Random().nextInt((int) radiusCheck) <= areaDensity) : false);
     }
 
     public boolean densityCheck(String areaName) {
-        if (this.isArea(areaName.toLowerCase())) {
-            return this.densityCheck(this.getArea(areaName.toLowerCase()));
+        if (isArea(areaName.toLowerCase())) {
+            return densityCheck(getArea(areaName.toLowerCase()));
         }
         return false;
     }

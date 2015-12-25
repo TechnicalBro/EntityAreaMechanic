@@ -9,15 +9,15 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 public class EntityUtilities {
-    public static String generateEntityName(EntityWrapper Entity_Wrapper) {
-        String entityName = StringUtils.capitalize(Entity_Wrapper.getType().toString().toLowerCase().replace("_", " "));
+    public static String generateEntityName(EntityWrapper wrapper) {
+        String entityName = StringUtils.capitalize(wrapper.getType().toString().toLowerCase().replace("_", " "));
         String parsedEntityName = "";
 
-        parsedEntityName = (Entity_Wrapper.isElite() == true) ? "&eElite " : "&r";
+        parsedEntityName = (wrapper.isElite()) ? "&eElite " : "&r";
         //parsedEntityName = (Entity_Wrapper.isBoss() == true) ? "&cBoss " : "&r";
-        parsedEntityName = (Entity_Wrapper.isElite() == true && Entity_Wrapper.isBoss() == true) ? "&0" : parsedEntityName;
+        parsedEntityName = (wrapper.isElite() && wrapper.isBoss()) ? "&0" : parsedEntityName;
 
-        parsedEntityName = parsedEntityName + entityName + "&r &l-&r &6Lvl &r" + Entity_Wrapper.getLevel();
+        parsedEntityName = parsedEntityName + entityName + "&r &l-&r &6Lvl &r" + wrapper.getLevel();
         return Chat.format(parsedEntityName);
     }
 
@@ -25,9 +25,9 @@ public class EntityUtilities {
         String entityName = StringUtils.capitalize(enemyType.toString().toLowerCase().replace("_", " "));
         String parsedEntityName = "";
 
-        parsedEntityName = (isElite == true) ? "&eElite " : "&r";
+        parsedEntityName = (isElite) ? "&eElite " : "&r";
         //parsedEntityName = (isBoss == true) ? "&c" : "&r";
-        parsedEntityName = (isElite == true && isBoss == true) ? "&0" : parsedEntityName;
+        parsedEntityName = (isElite && isBoss) ? "&0" : parsedEntityName;
 
         parsedEntityName = parsedEntityName + entityName + "&r &l-&r &6Lvl &r" + enemyLevel;
         return Chat.format(parsedEntityName);
@@ -38,6 +38,12 @@ public class EntityUtilities {
         entityName = StringUtils.substringBefore(entityName, "  ");
         //hatHandler.sendMessageToConsole(entityName + ChatColor.RESET + " comes from " + Entity.getCustomName());
         return entityName;
+    }
+
+    public static String getHealthBar(LivingEntity entity) {
+        String bar = entity.getCustomName();
+        bar = StringUtils.substringAfter(bar, "  ");
+        return bar;
     }
 
     public static String generateHealthBar(LivingEntity entity) {

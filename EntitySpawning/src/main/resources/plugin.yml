@@ -1,7 +1,7 @@
 name: Entity-Mechanic
 main: com.caved_in.entityspawningmechanic.EntityMechanic
-version: 1.1
-description: The Entity System for TotalWar
+version: 1.0.3
+description: A unique entity spawning system, designed for RPG servers!
 author: Brandon Curtis (TheGamersCave)
 depend: [Commons]
 commands:

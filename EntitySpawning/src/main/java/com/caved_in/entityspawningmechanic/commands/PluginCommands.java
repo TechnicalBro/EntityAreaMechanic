@@ -5,11 +5,13 @@ import com.caved_in.commons.command.Arg;
 import com.caved_in.commons.command.Command;
 import com.caved_in.commons.entity.Entities;
 import com.caved_in.commons.menu.HelpScreen;
+import com.caved_in.commons.player.Players;
 import com.caved_in.entityspawningmechanic.EntityMechanic;
 import com.caved_in.entityspawningmechanic.config.EntityArea;
 import com.caved_in.entityspawningmechanic.config.XmlEntity;
 import com.caved_in.entityspawningmechanic.data.EntityWrapper;
 import com.caved_in.entityspawningmechanic.handlers.entity.EntityHandler;
+import com.caved_in.entityspawningmechanic.handlers.entityareas.EntityAreaHandler;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -40,6 +42,7 @@ public class PluginCommands {
 
     @Command(identifier = "areas", permissions = "entitymechanic.area")
     public void onAreasCommand(CommandSender Sender) {
+
         Chat.message(Sender, "&aPlease use &e/areas list&a to see the areas");
     }
 
@@ -59,13 +62,15 @@ public class PluginCommands {
     }
 
     @Command(identifier = "areas spawnentity")
-    public void onAreasSpawnEntity(Player player, @Arg(name = "area name") String area) {
+    public void onAreasSpawnEntity(Player player, @Arg(name = "area name") String area,@Arg(name = "amount",def="10")int amount) {
         if (!EntityMechanic.entityAreaHandler.isArea(area)) {
             Chat.message(player, String.format("&c%s&e is not a valid area. &aUse &e/areas list&a to view all areas.", area));
             return;
         }
 
-        EntityMechanic.entityAreaHandler.spawnRandomEntity(area);
+        for (int i = 0; i < amount; i++) {
+            EntityMechanic.entityAreaHandler.spawnRandomEntity(area);
+        }
     }
 
     //TODO write method to list all alive enemies with their data
@@ -104,6 +109,18 @@ public class PluginCommands {
     @Command(identifier = "areas help")
     public void onAreasHelp(CommandSender Sender, @Arg(name = "page", def = "1") int page) {
         pluginCommandHelpScreen.sendTo(Sender, page, 5);
+    }
+
+    @Command(identifier = "areas teleport")
+    public void onAreasTeleportCommand(Player player, @Arg(name = "area name")String area) {
+        if (!EntityMechanic.entityAreaHandler.isArea(area)) {
+            Chat.format(player, "&cArea &e%s &cdoesn't exist", area);
+            return;
+        }
+
+        EntityArea ea = EntityMechanic.entityAreaHandler.getArea(area);
+        Players.teleport(player,ea.getLocation());
+        //todo add spehul effekts
     }
 
     @Command(identifier = "newarea", permissions = "entitymechanic.area.create", description = "/newarea <AreaName> <SpawnRadius>")

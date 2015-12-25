@@ -11,7 +11,7 @@ public class SpawnAreaEntitiesRunnable implements Runnable {
 		for (EntityArea area : EntityMechanic.entityAreaHandler.getAreas()) {
 			if (EntityMechanic.entityAreaHandler.densityCheck(area)) {
 				EntityMechanic.entityAreaHandler.spawnRandomEntity(area);
-				Bukkit.getLogger().info("Spawned an Entity for the area [" + area.getName() + "]");
+				Bukkit.getLogger().info("Spawned an entity for the area [" + area.getName() + "]");
 			}
 		}
 	}

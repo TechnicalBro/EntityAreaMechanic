@@ -2,6 +2,7 @@ package com.caved_in.entityspawningmechanic.handlers.entity;
 
 import java.util.*;
 
+import com.caved_in.commons.chat.Chat;
 import com.caved_in.entityspawningmechanic.data.EntityWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.World;

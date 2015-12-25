@@ -13,33 +13,40 @@ import org.simpleframework.xml.*;
 public class EntityArea {
     private static Random random = new Random();
 
-    @Element(type = XmlLocation.class)
+    @Element(name = "center", type = XmlLocation.class)
     private XmlLocation location;
 
     @Attribute(name = "spawn-radius")
     private int spawnRadius = 0;
 
-    @ElementList(entry = "entity", name = "entities", inline = true, type = XmlEntity.class)
+    @ElementList(entry = "entity", name = "entities", inline = true, type = XmlEntity.class, required = false)
     private List<XmlEntity> entities = new ArrayList<XmlEntity>();
 
     @Attribute(name = "name")
     private String areaName = "";
 
-    public EntityArea(@Attribute(name = "name") String areaName, @Element(name = "location") XmlLocation location, @Attribute(name = "spawn-radius") int spawnRadius) {
+    public EntityArea(@Attribute(name = "name") String areaName, @Element(name = "center", type = XmlLocation.class) XmlLocation location, @Attribute(name = "spawn-radius") int spawnRadius,@ElementList(entry = "entity", name = "entities", inline = true, type = XmlEntity.class,required = false)List<XmlEntity> entities) {
         this.areaName = areaName;
         this.location = location;
         this.spawnRadius = spawnRadius;
+        if (entities != null) {
+            this.entities = entities;
+        }
     }
 
     public EntityArea(String areaName, Location loc, int spawnRadius) {
-        this(areaName, new XmlLocation(loc), spawnRadius);
+        this(areaName, new XmlLocation(loc), spawnRadius, null);
     }
 
     public XmlEntity getRandomEntity() {
+        if (entities == null || entities.size() == 0) {
+            return null;
+        }
         return entities.get(random.nextInt(entities.size()));
     }
 
     public Location getLocationInArea() {
+        //todo investigate spawning in center instead of random radius.
         return Locations.getRandomLocation(location, (int) getSpawnRadius());
     }
 
